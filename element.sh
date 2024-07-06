@@ -19,21 +19,27 @@ else
     ELEMENT=$($PSQL "SELECT * FROM elements WHERE name = '$KEY';")
     # fi
   else
-    exit 1
+    echo "I could not find that element in the database."
   fi
-  echo "$ELEMENT" | while IFS='|' read ATOMIC_NUMBER SYMBOL NAME
-  do
-    # echo "$ATOMIC_NUMBER, $SYMBOL, $NAME"
-    PROPERTIES=$($PSQL "SELECT * FROM properties WHERE atomic_number = $ATOMIC_NUMBER;")
-    echo "$PROPERTIES" | while IFS='|' read ATOMIC_NUMBER ATOMIC_MASS MELTING_POINT_CELSIUS BOILING_POINT_CELSIUS TYPE_ID
+
+  if [[ -z $ELEMENT ]]
+  then
+    echo "I could not find that element in the database."
+  else
+    echo "$ELEMENT" | while IFS='|' read ATOMIC_NUMBER SYMBOL NAME
     do
-      # echo "$ATOMIC_NUMBER $ATOMIC_MASS $MELTING_POINT_CELSIUS $BOILING_POINT_CELSIUS $TYPE_ID"
-      TYPES=$($PSQL "SELECT type FROM types WHERE type_id = $TYPE_ID;")
-      echo "$TYPES" | while IFS='|' read TYPE
+      # echo "$ATOMIC_NUMBER, $SYMBOL, $NAME"
+      PROPERTIES=$($PSQL "SELECT * FROM properties WHERE atomic_number = $ATOMIC_NUMBER;")
+      echo "$PROPERTIES" | while IFS='|' read ATOMIC_NUMBER ATOMIC_MASS MELTING_POINT_CELSIUS BOILING_POINT_CELSIUS TYPE_ID
       do
-        # echo "$TYPE"
-        echo "The element with atomic number $ATOMIC_NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $ATOMIC_MASS amu. $NAME has a melting point of $MELTING_POINT_CELSIUS celsius and a boiling point of $BOILING_POINT_CELSIUS celsius."
+        # echo "$ATOMIC_NUMBER $ATOMIC_MASS $MELTING_POINT_CELSIUS $BOILING_POINT_CELSIUS $TYPE_ID"
+        TYPES=$($PSQL "SELECT type FROM types WHERE type_id = $TYPE_ID;")
+        echo "$TYPES" | while IFS='|' read TYPE
+        do
+          # echo "$TYPE"
+          echo "The element with atomic number $ATOMIC_NUMBER is $NAME ($SYMBOL). It's a $TYPE, with a mass of $ATOMIC_MASS amu. $NAME has a melting point of $MELTING_POINT_CELSIUS celsius and a boiling point of $BOILING_POINT_CELSIUS celsius."
+        done
       done
     done
-  done
+  fi
 fi
